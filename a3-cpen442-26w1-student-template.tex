@@ -1,0 +1,166 @@
+% CPEN 442 -- Assignment 3 answer template (optional).
+% Fill in your name(s) and answers below, compile, and submit the PDF as a3.pdf.
+% You do not have to use LaTeX: any readable PDF is fine.
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[dvipsnames,table]{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage[T1]{fontenc}
+
+\definecolor{alicepink}{rgb}{0.98,0.51,1.}
+\definecolor{aliceblue}{rgb}{0.7, 1, 1}
+\definecolor{background}{rgb}{1, 0.98, 0.95}
+
+\lstset{frame=tb, language=Python, showstringspaces=false, columns=flexible,
+  basicstyle={\small\ttfamily}, breaklines=true, backgroundcolor=\color{background}}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{\baselineskip}
+
+% The questions answered in this PDF are not consecutive, so each one gives its number.
+\newcommand{\question}[2]{\textbf{\colorbox{aliceblue}{[#2 pts]} Question #1}}
+
+% Box to write each answer in. It grows with its content.
+\newtcolorbox{answer}{colback=white, colframe=black, boxrule=0.4pt,
+  sharp corners, breakable}
+
+\begin{document}
+
+\begin{center}
+    THE UNIVERSITY OF BRITISH COLUMBIA\\
+    Electrical and Computer Engineering Department\\[\baselineskip]
+    {\bf CPEN 442\hfill Introduction to Cybersecurity\hfill Winter Term 1, 2026}
+    \vspace{1cm}
+
+    {\sc \Large Assignment 3: Authentication and Hashing}
+\end{center}
+
+% One or two students. Delete the second row if you worked alone.
+\begin{tabularx}{\textwidth}{|X|l|}
+    \hline
+    \rowcolor{gray!15} \textbf{Name} & \textbf{Student number} \\
+    \hline
+    Chongkai (Lucas) Lyu & 30349559 \\
+    \hline
+    Leyang Gao & 58256207 \\
+    \hline
+\end{tabularx}
+
+Questions 3, 6, and 9 are answered in \texttt{a3.py}; this PDF covers Questions 1, 2, 4, 5, 7, and 8.
+
+\section{Offline Dictionary Attacks}
+
+\question{1}{10} Which hash function generated each of the three digests, how did you deduce it, and what are the passwords?
+
+\begin{answer}
+    \textbf{Digest 1:} hash function \texttt{SHA-256}, password \texttt{annette}
+
+    \textbf{Digest 2:} hash function \texttt{SHA3-224}, password \texttt{spurs}
+
+    \textbf{Digest 3:} hash function \texttt{SHA-1}, password \texttt{loki}
+
+    \textbf{How I deduced the hash functions:}
+    One hexadecimal character is 4 bits, so the bit length of a digest is four times its character length.
+    The three digests have lengths 64, 56, and 40, which are 256, 224, and 160 bits.
+    That narrows the SHA family, but it does not name a single function: SHA-256, SHA3-256, and SHA-512/256 all produce 64 hex characters, and SHA-224, SHA3-224, and SHA-512/224 all produce 56.
+    Only SHA-1 is a common SHA function with a 40-character digest.
+
+    The passwords cannot be recovered by inverting the hash.
+    The assignment says every password comes from the dictionary, so I hashed each dictionary word with every candidate of the matching length and compared the result with the digest.
+    Each digest matched exactly once: SHA-256(\texttt{annette}), SHA3-224(\texttt{spurs}), and SHA-1(\texttt{loki}).
+    The same-length alternatives matched no dictionary word, so the dictionary search both identifies the algorithm and recovers the password.
+\end{answer}
+
+\question{2}{10} Answer the three questions about the bcrypt digests, briefly explaining each answer (one sentence is enough).
+
+\begin{answer}
+    \textbf{Hash function used:} bcrypt.
+    All three digests use bcrypt, as indicated by the \texttt{\$2b\$} prefix in their Modular Crypt Format representations.
+
+    \textbf{Same salt or different salts:} different salts.
+    The 22-character salt fields following the cost factors are \texttt{AS2K2H8nSwdvs2yNoDgtbu}, \texttt{Shq4mPuANPJbdqozQkB1NO}, and \texttt{dHO22WXdr4/w6PiDHhVYA.}
+
+    \textbf{Digest that took longer to compute, and why:} digest 2.
+    Its cost factor is 8, while digests 1 and 3 have cost factor 6.
+    bcrypt's work scales as \(2^{\text{cost}}\), so digest 2 takes about \(2^{8}/2^{6} = 4\) times as much work.
+\end{answer}
+
+\question{4}{15} Which of \texttt{q3\_sample1.txt}, \texttt{q3\_sample2.txt}, and \texttt{q3\_sample3.txt} is the easiest to break, and which is the hardest? Why?
+
+\begin{answer}
+    \textbf{Easiest:} \texttt{q3\_sample?.txt}
+
+    \textbf{Explanation:}
+    % Write your explanation here.
+
+    \bigskip
+    \textbf{Hardest:} \texttt{q3\_sample?.txt}
+
+    \textbf{Explanation:}
+    % Write your explanation here.
+\end{answer}
+
+\section{Offline Brute-Force Attacks}
+
+\question{5}{10} What is the maximum password length that your computer can brute-force in under one day, for bcrypt (4 rounds) and for SHA-256? Explain how you got each number.
+
+\begin{answer}
+    \textbf{My computer's hashing speed:} bcrypt (4 rounds): ? hashes per second; SHA-256: ? hashes per second
+
+    \textbf{Maximum length with bcrypt:} ?
+
+    \textbf{Maximum length with SHA-256:} ?
+
+    \textbf{How I got these numbers:}
+    % Write your explanation (and computations) here.
+\end{answer}
+
+\section{Two-Factor Authentication}
+
+\question{7}{10} Which service did you pick, which forms of two-factor authentication does it support, and how could an attacker circumvent it?
+
+\begin{answer}
+    \textbf{Service:} ?
+
+    \textbf{Forms of two-factor authentication it supports:} ?
+
+    \textbf{How an attacker could circumvent it (a realistic example):}
+    % Write your answer here.
+\end{answer}
+
+\section{Authentication in UBC}
+
+\question{8}{15} Comment on the two answers from the UBC website, and quote the NIST recommendation that applies to each one.
+
+\begin{answer}
+    \textbf{``Why do I have to change my CWL password?''}
+
+    \textbf{My comment:}
+    % Write your comment here.
+
+    \textbf{NIST recommendation (quote and section number):}
+    % Write the quote and the section number here.
+
+    \bigskip
+    \textbf{``What are the CWL password requirements?''}
+
+    \textbf{My comment:}
+    % Write your comment here.
+
+    \textbf{NIST recommendation (quote and section number):}
+    % Write the quote and the section number here.
+\end{answer}
+
+% Include this section only if you used generative AI.
+% It must be between half a page and one page long, and cannot be written by AI.
+\section*{Generative AI Disclosure}
+
+% Describe how and where you used generative AI.
+
+\end{document}

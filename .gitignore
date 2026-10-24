@@ -1,0 +1,17 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.out
+*.synctex.gz
+*.toc
+
+# Local environments and secrets
+__pycache__/
+.venv/
+.env
+.env.*
+*.pem
+*.key
+*.pyc
