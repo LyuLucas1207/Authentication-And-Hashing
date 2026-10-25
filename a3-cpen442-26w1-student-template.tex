@@ -207,6 +207,6 @@ Questions 3, 6, and 9 are answered in \texttt{a3.py}; this PDF covers Questions 
 % It must be between half a page and one page long, and cannot be written by AI.
 \section*{Generative AI Disclosure}
 
-I told the assistant the method: group bcrypt digests by the first 29 characters, hash each dictionary word once per group, and guess the online password from the virtual time. The assistant wrote that code. The code is in \url{https://github.com/LyuLucas1207/Authentication-And-Hashing}. I ran the tests and decided the written answers in this PDF.
+I told the assistant the logic, and the assistant implemented the code. For Question 9, I told it to build the super\_admin message and its SHA-256 first, put that suffix in the password so the server CBC-encrypts it, then keep only those ciphertext blocks and drop the rest. The assistant wrote that code. The code is in \url{https://github.com/LyuLucas1207/Authentication-And-Hashing}. I ran the tests and decided the written answers in this PDF.
 
 \end{document}

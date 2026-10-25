@@ -111,9 +111,24 @@ def online_attack(check_password: Callable[[str], tuple[bool, int]]) -> str:
 def forge_admin_token_cbc_hash(
         generate_guest_token: Callable[[str, str], tuple[bytes, bytes]],
         ) -> tuple[bytes, bytes, str, str]:
-    """Implements attacker for Q9"""
-    ciphertext_token = bytes(0)
-    iv = bytes(0)
-    name = 'test_name'
-    pwd_b64 = base64.b64encode(b'test_pwd').decode('ascii')
-    return ciphertext_token, iv, name, pwd_b64
+    """Implements attacker for Q9.
+
+    Build the super_admin message and its SHA-256 first, hide that suffix
+    inside the password, and let the server CBC-encrypt it. Then keep only
+    the ciphertext blocks that cover the message, digest, and padding.
+    """
+    name = "alice"
+    password = b"123"
+    message = b"name=" + name.encode("ascii") + b"&pwd=" + password + b"&role=super_admin"
+    digest = SHA256.new(data=message).digest()
+    # PKCS#7 so the forged plaintext ends on an AES block boundary.
+    padded = pad(message + digest, AES.block_size)
+    suffix = padded[len(message):]
+
+    # Server writes name=...&pwd=<this>&role=guest, then encrypts.
+    injected = password + b"&role=super_admin" + suffix
+    ciphertext, iv = generate_guest_token(name, base64.b64encode(injected).decode("ascii"))
+    # Drop the blocks that encrypt &role=guest and the server's own digest.
+    ciphertext = ciphertext[:len(padded)]
+    # read_token compares the parsed pwd field, which is only the real password.
+    return ciphertext, iv, name, base64.b64encode(password).decode("ascii")
