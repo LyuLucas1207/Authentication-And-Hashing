@@ -117,8 +117,8 @@ def forge_admin_token_cbc_hash(
     inside the password, and let the server CBC-encrypt it. Then keep only
     the ciphertext blocks that cover the message, digest, and padding.
     """
-    name = "alice"
-    password = b"123"
+    name = "lucas"
+    password = b"127"
     message = b"name=" + name.encode("ascii") + b"&pwd=" + password + b"&role=super_admin"
     digest = SHA256.new(data=message).digest()
     # PKCS#7 so the forged plaintext ends on an AES block boundary.
