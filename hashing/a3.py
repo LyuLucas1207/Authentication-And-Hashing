@@ -36,6 +36,55 @@ def offline_dictionary_attack(dictionary: list[str], digests: list[str]) -> list
     return pwd_list
 
 
+# Same alphabet the server samples from. Each check adds at least 1 virtual time.
+_ALPHABET = string.digits + string.ascii_letters + string.punctuation
+
+
+def _password_length(check_password: Callable[[str], tuple[bool, int]]) -> tuple[int, str | None]:
+    """A wrong length returns virtual time 0. The password length is 5 to 10."""
+    for size in range(5, 11):
+        probe = _ALPHABET[0] * size
+        ok, elapsed = check_password(probe)
+        if ok:
+            return size, probe
+        if elapsed:
+            return size, None
+    raise RuntimeError("password length was not between 5 and 10")
+
+
+def _extend_prefix(
+        check_password: Callable[[str], tuple[bool, int]],
+        prefix: str,
+        length: int,
+        ) -> str:
+    """Recover one more character, or the whole password if a guess is accepted.
+
+    A wrong guess at this position is checked exactly n = len(prefix)+1 times.
+    Every check adds at least 1, so virtual time n means every delay was 1 and
+    the guess is certainly wrong. Time above 4n means more than n checks ran,
+    so the guess is certainly right.
+    """
+    checks_if_wrong = len(prefix) + 1
+    wrong_max = 4 * checks_if_wrong
+    filler = "0" * (length - len(prefix) - 1)
+    pending = list(_ALPHABET)
+    while len(pending) > 1:
+        still_possible = []
+        for char in pending:
+            candidate = prefix + char + filler
+            ok, elapsed = check_password(candidate)
+            if ok:
+                return candidate
+            if elapsed > wrong_max:
+                return prefix + char
+            if elapsed > checks_if_wrong:
+                still_possible.append(char)
+        if not still_possible:
+            raise RuntimeError("every candidate was rejected")
+        pending = still_possible
+    return prefix + pending[0]
+
+
 def online_attack(check_password: Callable[[str], tuple[bool, int]]) -> str:
     """This attack receives a check_password function which
     takes as input a candidate password and returns whether
@@ -43,8 +92,20 @@ def online_attack(check_password: Callable[[str], tuple[bool, int]]) -> str:
     it took to check the password correctness.
     The attack should output the correct password."""
 
-    pwd = ''
-    return pwd
+    length, found = _password_length(check_password)
+    if found is not None:
+        return found
+    prefix = ""
+    while len(prefix) < length - 1:
+        prefix = _extend_prefix(check_password, prefix, length)
+        if len(prefix) == length:
+            return prefix
+    for char in _ALPHABET:
+        candidate = prefix + char
+        ok, _elapsed = check_password(candidate)
+        if ok:
+            return candidate
+    raise RuntimeError("last character was not found")
 
 
 def forge_admin_token_cbc_hash(
