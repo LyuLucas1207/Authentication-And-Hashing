@@ -12,7 +12,7 @@ These notes explain why a hash cannot be inverted yet still falls to a dictionar
 6. **Online timing attack.** The server compares the password character by character and leaks how long the check took. Use that difference to read the password.
 7. **Two-factor authentication.** Pick a real service, name the second factors it supports, and show how an attacker could circumvent them.
 8. **Authentication at UBC.** Comment on two CWL password policies against the matching NIST recommendation.
-9. **CBC token.** Turn a `guest` token from the server into an `admin` token.
+9. **CBC token.** Have the server CBC-encrypt a `super_admin` message, then truncate the ciphertext so the parsed role is `super_admin`.
 
 The code for Questions 3, 6, and 9 is in `hashing/a3.py`. Questions 1, 2, 4, 5, 7, and 8 are written in the PDF. Question 1 also has a standalone script, `assignments/q1.py`.
 
@@ -38,11 +38,11 @@ A dictionary attack tries one word list. It succeeds only if the password is in 
 
 ### Online timing
 
-An offline attack holds the digest and can hash freely. An online attack can only ask the server, and it may be rate-limited. If the server compares the password character by character and returns at the first mismatch, a longer correct prefix takes longer. Choosing each character from that timing turns a search of size \(|\Sigma|^{L}\) into one of size \(|\Sigma|\times L\). Noise is reduced by taking a median or a majority over repeated measurements.
+An offline attack holds the digest and can hash freely. An online attack can only ask the server. A wrong length returns virtual time 0, so the length is the first probe from 5 to 10 that returns a positive time. A wrong guess at the current character is checked exactly \(n\) times, and each check adds 1 to 4. Time equal to \(n\) means the guess stopped there, so that character is rejected. Time greater than \(4n\) means the server checked further, so that character is accepted. Any time in between is measured again. The last character is tried until the server returns true.
 
 ### CBC token
 
-The Question 9 token has the form `name=<name>&pwd=<pwd>&role=guest&code=<code>`. It is encrypted with AES-CBC and has no integrity check. On CBC decryption, each plaintext block is the AES decryption of the ciphertext block XORed with the previous ciphertext block. Flipping one byte of the previous ciphertext flips the same bit of the next plaintext, and the previous block itself decrypts to garbage. Putting that garbage in a field that does not matter turns `guest` into `admin` without the key.
+Question 9 builds the desired message before any encryption. The message is `name=alice&pwd=123&role=super_admin`, followed by its SHA-256 digest and PKCS#7 padding out to a block boundary. That suffix is placed inside the password, so the server CBC-encrypts it and then appends `&role=guest`. Only the ciphertext blocks that cover the message, digest, and padding are kept. CBC decryption of those leading blocks depends only on the IV and those blocks, so the prefix is unchanged. After the server removes the padding, the last 32 bytes match the digest and the parsed role is `super_admin`.
 
 ## Files
 
