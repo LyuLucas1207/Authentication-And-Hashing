@@ -94,16 +94,23 @@ Questions 3, 6, and 9 are answered in \texttt{a3.py}; this PDF covers Questions 
 \question{4}{15} Which of \texttt{q3\_sample1.txt}, \texttt{q3\_sample2.txt}, and \texttt{q3\_sample3.txt} is the easiest to break, and which is the hardest? Why?
 
 \begin{answer}
-    \textbf{Easiest:} \texttt{q3\_sample?.txt}
+    \textbf{Easiest:} \texttt{q3\_sample1.txt}
 
     \textbf{Explanation:}
-    % Write your explanation here.
+    All three files contain 10 bcrypt digests with version \texttt{2b} and cost factor 4, so each hash call has essentially the same cost.
+    \texttt{q3\_sample1.txt} uses one salt for all 10 digests: the first 29 characters are identical.
+    Hashing a candidate once with that salt and cost lets me compare the result with every digest.
+    On a full scan of a 1000-word dictionary, that is \(1 \times 1000\) bcrypt calls.
 
     \bigskip
-    \textbf{Hardest:} \texttt{q3\_sample?.txt}
+    \textbf{Hardest:} \texttt{q3\_sample2.txt}
 
     \textbf{Explanation:}
-    % Write your explanation here.
+    \texttt{q3\_sample2.txt} uses 10 different salts, so the same candidate must be hashed separately for each digest and the computation cannot be reused.
+    A full scan of the same 1000-word dictionary takes \(10 \times 1000\) calls.
+    \texttt{q3\_sample3.txt} is in between: five salts, each shared by two digests, so a full scan takes about \(5 \times 1000\) calls.
+    A single run can spend more time on sample 3 if those passwords occur later in the dictionary and the search stops when they are found.
+    That changes how far down the dictionary the attack walks, not the fact that sample 2 has no salt to share.
 \end{answer}
 
 \section{Offline Brute-Force Attacks}
@@ -111,14 +118,23 @@ Questions 3, 6, and 9 are answered in \texttt{a3.py}; this PDF covers Questions 
 \question{5}{10} What is the maximum password length that your computer can brute-force in under one day, for bcrypt (4 rounds) and for SHA-256? Explain how you got each number.
 
 \begin{answer}
-    \textbf{My computer's hashing speed:} bcrypt (4 rounds): ? hashes per second; SHA-256: ? hashes per second
+    \textbf{My computer's hashing speed:} bcrypt (4 rounds): 1065.9 hashes per second; SHA-256: 765992.0 hashes per second
 
-    \textbf{Maximum length with bcrypt:} ?
+    \textbf{Maximum length with bcrypt:} 4
 
-    \textbf{Maximum length with SHA-256:} ?
+    \textbf{Maximum length with SHA-256:} 5
 
     \textbf{How I got these numbers:}
-    % Write your explanation (and computations) here.
+    I ran \texttt{q5\_test.py} with \texttt{hash\_number = 10000}.
+    The alphabet is \texttt{string.digits + string.ascii\_letters + string.punctuation}, which has 94 characters.
+    One day is \(86400\) seconds, so this computer can compute \(1065.9 \times 86400 \approx 9.21 \times 10^{7}\) bcrypt hashes, or \(765992 \times 86400 \approx 6.62 \times 10^{10}\) SHA-256 hashes, in under one day.
+    The number of passwords of length \(L\) is \(94^{L}\).
+
+    For bcrypt, \(94^{4} = 78074896\) hashes take \(78074896 / 1065.9 \approx 73248\) seconds, about \(0.85\) days.
+    \(94^{5}\) takes about \(79.7\) days, so 4 is the longest length that finishes in under one day.
+
+    For SHA-256, \(94^{5} = 7339040224\) hashes take \(7339040224 / 765992 \approx 9581\) seconds, about \(0.11\) days.
+    \(94^{6}\) takes about \(10.4\) days, so 5 is the longest length.
 \end{answer}
 
 \section{Two-Factor Authentication}
