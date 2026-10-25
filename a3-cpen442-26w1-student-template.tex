@@ -142,12 +142,25 @@ Questions 3, 6, and 9 are answered in \texttt{a3.py}; this PDF covers Questions 
 \question{7}{10} Which service did you pick, which forms of two-factor authentication does it support, and how could an attacker circumvent it?
 
 \begin{answer}
-    \textbf{Service:} ?
+    \textbf{Service:} Amazon Web Services (AWS account sign-in).
 
-    \textbf{Forms of two-factor authentication it supports:} ?
+    \textbf{Forms of two-factor authentication it supports:}
+    AWS IAM supports three MFA types, which matches the Software and Hardware columns on 2fa.directory. AWS IAM does not offer SMS or email codes as standard MFA enrollment methods.
+    \begin{itemize}
+        \item Virtual authenticator apps that generate a six-digit TOTP code, such as Google Authenticator, Microsoft Authenticator, or Authy.
+        \item Hardware TOTP tokens purchased for use with AWS.
+        \item Passkeys and FIDO2 security keys, including a hardware key such as a YubiKey and a platform authenticator unlocked with a fingerprint, face, or device PIN.
+    \end{itemize}
 
     \textbf{How an attacker could circumvent it (a realistic example):}
-    % Write your answer here.
+    Suppose the second factor is a virtual authenticator app.
+    An attacker sends a phishing email about an AWS billing alert.
+    The link opens a reverse-proxy page that looks like the AWS console and forwards each entry to the real sign-in page.
+    I type my password and the current six-digit code.
+    The attacker relays both immediately, while that code is still valid, and receives an authenticated session as me.
+    The attacker does not break the TOTP algorithm.
+    The attacker steals one live code together with the password.
+    A FIDO2 security key would refuse to sign the login for the phishing site, so this bypass depends on the software TOTP factor.
 \end{answer}
 
 \section{Authentication in UBC}
@@ -158,19 +171,35 @@ Questions 3, 6, and 9 are answered in \texttt{a3.py}; this PDF covers Questions 
     \textbf{``Why do I have to change my CWL password?''}
 
     \textbf{My comment:}
-    % Write your comment here.
+    UBC's FAQ says that, for security reasons, users are prompted to replace their CWL password once a year, and that changing it even more often would be safer.
+    A fixed expiry does not add much security.
+    People who must invent a new password on a schedule usually keep the old one and tweak it, for example by advancing a year or a trailing digit.
+    Anyone who has already seen the previous password can try those small edits.
+    A reset is worth requiring when there is evidence that the password has been compromised, not because a year has passed.
 
     \textbf{NIST recommendation (quote and section number):}
-    % Write the quote and the section number here.
+    NIST SP 800-63B-4, Section 3.1.1.2:
+    ``Verifiers and CSPs SHALL NOT require subscribers to change passwords periodically.
+    However, verifiers SHALL force a change if there is evidence that the authenticator has been compromised.''
 
     \bigskip
     \textbf{``What are the CWL password requirements?''}
 
     \textbf{My comment:}
-    % Write your comment here.
+    The passphrase option is the part that fits current guidance: 16 to 50 characters, with spaces allowed inside the phrase, so length can carry the strength.
+    The short option works against that guidance.
+    It accepts 8 to 15 characters only if the password contains an uppercase letter, a lowercase letter, a digit, and a symbol.
+    That mixture rule pushes people toward predictable patterns such as a word with a capital and a digit stuck on the end.
+    Eight characters also meets NIST's minimum only when the password is one factor inside MFA.
+    On its own, NIST requires at least 15 characters, so the short option falls short of the single-factor rule.
+    The passphrase ceiling of 50 characters is below NIST's recommended allowance as well.
+    That allowance is a SHOULD, not a SHALL, so the cap misses a recommendation rather than breaking a mandatory limit.
 
     \textbf{NIST recommendation (quote and section number):}
-    % Write the quote and the section number here.
+    NIST SP 800-63B-4, Section 3.1.1.2:
+    ``Verifiers and CSPs SHALL require passwords that are used as a single-factor authentication mechanism to be a minimum of 15 characters in length.''
+    ``Verifiers and CSPs SHALL NOT impose other composition rules (e.g., requiring mixtures of different character types) for passwords.''
+    ``Verifiers and CSPs SHOULD permit a maximum password length of at least 64 characters.''
 \end{answer}
 
 % Include this section only if you used generative AI.
